@@ -90,6 +90,15 @@ Open **http://localhost:5173** in your browser.
 Edit **`src/lib/sources.js`** — it's heavily commented with instructions for adding
 new scraping sources, adjusting CSS selectors, and tweaking keyword filters.
 
+## Microlearning book tab
+
+The **Microlearning** tab in Curated Reads contains short, original summaries of all
+18 chapters of *Business Analysis For Dummies* (2nd edition). The book PDF is not
+copied into the project or served to visitors. Edit `src/lib/lessons.js` to revise
+the summaries, key points, or practice prompts. Chapter selection and completion
+are saved in the current browser's localStorage under
+`daystart-business-analysis-progress-v1`.
+
 ---
 
 ## Build for production

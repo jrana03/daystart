@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Fuse from 'fuse.js'
 import { callFunction, supabaseConfigured } from '../lib/supabase'
 import { SOURCES } from '../lib/sources'
+import Microlearning from './Microlearning'
+
+const LEARNING_TAB_ID = 'microlearning'
 
 // ── Skeleton card shown while a source is loading ───────────────
 function SkeletonCard() {
@@ -199,8 +202,21 @@ export default function Articles() {
             )}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => handleTabChange(LEARNING_TAB_ID)}
+          aria-pressed={activeId === LEARNING_TAB_ID}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            activeId === LEARNING_TAB_ID
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600'
+          }`}
+        >
+          Microlearning
+        </button>
       </div>
 
+      {activeId === LEARNING_TAB_ID ? <Microlearning /> : <>
       {/* ── Search bar ────────────────────────────────────────── */}
       <div className="relative mb-4">
         <svg
@@ -319,6 +335,7 @@ export default function Articles() {
           ))}
         </div>
       )}
+      </>}
     </div>
   )
 }
