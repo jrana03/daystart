@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { BOOK_LESSONS } from '../lib/lessons'
+import { BOOK_INFO, BOOK_LESSONS } from '../lib/lessons'
 
-const STORAGE_KEY = 'daystart-business-analysis-progress-v1'
+const STORAGE_KEY = BOOK_INFO.storageKey
 
 function loadProgress() {
   try {
@@ -48,8 +48,8 @@ export default function Microlearning() {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-2">A book in small lessons</p>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Business Analysis For Dummies</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">18 chapter summaries · 2nd edition · Ali Cox</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{BOOK_INFO.title}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{BOOK_INFO.subtitle} · {BOOK_INFO.author}</p>
           </div>
           <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">
             {completedCount} of {BOOK_LESSONS.length} completed
@@ -58,7 +58,7 @@ export default function Microlearning() {
         <div
           className="mt-5 h-2.5 rounded-full bg-indigo-100 dark:bg-indigo-950 overflow-hidden"
           role="progressbar"
-          aria-label="Chapters completed"
+          aria-label="Sections completed"
           aria-valuenow={completedCount}
           aria-valuemin={0}
           aria-valuemax={BOOK_LESSONS.length}
@@ -72,7 +72,7 @@ export default function Microlearning() {
 
       <div className="lg:grid lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-5">
         <div className="lg:hidden mb-4">
-          <label htmlFor="lesson-select" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Choose a chapter</label>
+          <label htmlFor="lesson-select" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Choose a section</label>
           <select
             id="lesson-select"
             value={lesson.number}
@@ -81,13 +81,13 @@ export default function Microlearning() {
           >
             {BOOK_LESSONS.map((item) => (
               <option key={item.number} value={item.number}>
-                {completed.has(item.number) ? '✓ ' : ''}{item.number}. {item.title}
+                {completed.has(item.number) ? '✓ ' : ''}{item.label}: {item.title}
               </option>
             ))}
           </select>
         </div>
 
-        <nav aria-label="Book chapters" className="hidden lg:block rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 shadow-sm self-start max-h-[610px] overflow-y-auto">
+        <nav aria-label="Book sections" className="hidden lg:block rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 shadow-sm self-start max-h-[610px] overflow-y-auto">
           {BOOK_LESSONS.map((item) => (
             <button
               key={item.number}
@@ -105,7 +105,7 @@ export default function Microlearning() {
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
                   : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
               }`}>{completed.has(item.number) ? '✓' : item.number}</span>
-              <span className="text-xs leading-snug font-medium pt-1">{item.title}</span>
+              <span className="text-xs leading-snug font-medium pt-1"><span className="block text-[10px] uppercase tracking-wide opacity-70 mb-0.5">{item.label}</span>{item.title}</span>
             </button>
           ))}
         </nav>
@@ -113,15 +113,19 @@ export default function Microlearning() {
         <article aria-live="polite" className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 sm:p-7 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-              {lesson.part} · Chapter {lesson.number}
+              {lesson.part} · {lesson.label}
             </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">Book page {lesson.page}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">PDF page {lesson.page}</span>
           </div>
           <h4 className="text-xl sm:text-2xl font-bold leading-tight text-gray-900 dark:text-white">{lesson.title}</h4>
-          <p className="mt-4 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-300">{lesson.summary}</p>
+          <div className="mt-4 space-y-3">
+            {lesson.summary.map((paragraph) => (
+              <p key={paragraph} className="text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-300">{paragraph}</p>
+            ))}
+          </div>
 
           <div className="mt-7 border-t border-gray-100 dark:border-gray-700 pt-6">
-            <h5 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Key points</h5>
+            <h5 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Key points to remember</h5>
             <ul className="space-y-3">
               {lesson.points.map((point) => (
                 <li key={point} className="flex gap-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
@@ -133,7 +137,7 @@ export default function Microlearning() {
           </div>
 
           <div className="mt-7 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/40 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-1">Try it</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-1">Reflect</p>
             <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{lesson.prompt}</p>
           </div>
 
@@ -172,7 +176,7 @@ export default function Microlearning() {
         </article>
       </div>
       <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
-        Concise study notes based on the book. Your progress is saved in this browser.
+        Original study notes based on the book. Your progress is saved in this browser.
       </p>
     </div>
   )
