@@ -58,7 +58,7 @@ export default function Microlearning() {
         <div
           className="mt-5 h-2.5 rounded-full bg-indigo-100 dark:bg-indigo-950 overflow-hidden"
           role="progressbar"
-          aria-label="Sections completed"
+          aria-label="Chapters completed"
           aria-valuenow={completedCount}
           aria-valuemin={0}
           aria-valuemax={BOOK_LESSONS.length}
@@ -72,7 +72,7 @@ export default function Microlearning() {
 
       <div className="lg:grid lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-5">
         <div className="lg:hidden mb-4">
-          <label htmlFor="lesson-select" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Choose a section</label>
+          <label htmlFor="lesson-select" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Choose a chapter</label>
           <select
             id="lesson-select"
             value={lesson.number}
@@ -87,7 +87,7 @@ export default function Microlearning() {
           </select>
         </div>
 
-        <nav aria-label="Book sections" className="hidden lg:block rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 shadow-sm self-start max-h-[610px] overflow-y-auto">
+        <nav aria-label="Book chapters" className="hidden lg:block rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 shadow-sm self-start max-h-[610px] overflow-y-auto">
           {BOOK_LESSONS.map((item) => (
             <button
               key={item.number}

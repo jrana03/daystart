@@ -93,12 +93,12 @@ new scraping sources, adjusting CSS selectors, and tweaking keyword filters.
 ## Microlearning book tab
 
 The **Microlearning** tab in Curated Reads contains original summaries and key
-points for the 35 main sections and two appendices of *The Art of Seduction* by
-Robert Greene. The book PDF is not copied into the project or served to visitors.
-Edit `src/lib/lessons.js` to revise the summaries, key points, or reflection
-prompts. Section selection and completion are saved in the current browser's
-localStorage under `daystart-art-of-seduction-progress-v1`. Progress from the
-previous book is not reused.
+points for all 18 chapters of *The Laws of Human Nature* by Robert Greene. The
+book PDF is not copied into the project or served to visitors. Edit
+`src/lib/lessons.js` to revise the summaries, key points, or reflection prompts.
+Chapter selection and completion are saved in the current browser's localStorage
+under `daystart-laws-of-human-nature-progress-v1`. Progress from previous books
+is not reused.
 
 ---
 
