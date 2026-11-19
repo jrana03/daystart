@@ -3,8 +3,10 @@ import Fuse from 'fuse.js'
 import { callFunction, supabaseConfigured } from '../lib/supabase'
 import { SOURCES } from '../lib/sources'
 import Microlearning from './Microlearning'
+import ImportantArticles from './ImportantArticles'
 
 const LEARNING_TAB_ID = 'microlearning'
+const IMPORTANT_TAB_ID = 'important-articles'
 
 // ── Skeleton card shown while a source is loading ───────────────
 function SkeletonCard() {
@@ -204,6 +206,18 @@ export default function Articles() {
         ))}
         <button
           type="button"
+          onClick={() => handleTabChange(IMPORTANT_TAB_ID)}
+          aria-pressed={activeId === IMPORTANT_TAB_ID}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            activeId === IMPORTANT_TAB_ID
+              ? 'bg-amber-600 text-white shadow-sm'
+              : 'bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:border-amber-400 dark:hover:border-amber-600'
+          }`}
+        >
+          Important Articles
+        </button>
+        <button
+          type="button"
           onClick={() => handleTabChange(LEARNING_TAB_ID)}
           aria-pressed={activeId === LEARNING_TAB_ID}
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
@@ -216,7 +230,7 @@ export default function Articles() {
         </button>
       </div>
 
-      {activeId === LEARNING_TAB_ID ? <Microlearning /> : <>
+      {activeId === LEARNING_TAB_ID ? <Microlearning /> : activeId === IMPORTANT_TAB_ID ? <ImportantArticles /> : <>
       {/* ── Search bar ────────────────────────────────────────── */}
       <div className="relative mb-4">
         <svg

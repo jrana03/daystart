@@ -100,6 +100,93 @@ prompts. Chapter selection and completion are saved in the current browser's
 localStorage under `daystart-how-to-win-friends-progress-v1`. Progress from
 previous books is not reused.
 
+## Important Articles tab
+
+The **Important Articles** tab collects headlines from five pages:
+
+- Washington Post front page
+- Washington Post Business
+- New York Times front page
+- New York Times Business
+- Wall Street Journal front page
+
+It asks Claude (`claude-sonnet-5-5`) to group headlines that cover the same story,
+and keeps only stories covered by at least two outlets. Each card reads
+**"Topic: …"** and lists every outlet's article. Links open on the publisher's
+site in a new tab, so your subscriptions apply.
+
+All of this runs in the `important-articles` Edge Function. Your Anthropic key
+stays on Supabase and is never shipped to the browser.
+
+### 1. Paste your Anthropic API key
+
+Get a key at **https://console.anthropic.com → API Keys**. Then use **one** of these options:
+
+**Option A — env file (recommended):**
+
+```bash
+cp supabase/functions/.env.example supabase/functions/.env
+```
+
+Open `supabase/functions/.env` and replace the placeholder:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...your key...
+```
+
+Then upload it:
+
+```bash
+supabase secrets set --env-file supabase/functions/.env
+```
+
+`supabase/functions/.env` is gitignored. Never put the key in `.env.local` or in
+any `VITE_` variable, because those are bundled into the frontend.
+
+**Option B — command line:**
+
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...your key...
+```
+
+**Option C — dashboard:** go to **Supabase Dashboard → Edge Functions → Secrets**
+and add `ANTHROPIC_API_KEY`.
+
+### 2. Deploy the function
+
+```bash
+supabase functions deploy important-articles --no-verify-jwt
+```
+
+Secrets take effect without redeploying. If you change the key later, run
+`supabase secrets set` again.
+
+### 3. Check it
+
+Open the app, then click **Curated Reads → Important Articles**. The first load
+takes about 10–30 seconds while the pages are scraped and Claude groups them.
+Until the key is set, the tab shows a "needs an Anthropic API key" message.
+
+### How it behaves
+
+- **Scraping and fallbacks:** each page is scraped first. NYT and WSJ often block
+  automated requests. When a page is blocked, times out, or yields fewer than 5
+  headlines, the function uses that outlet's official RSS feed instead. A source
+  that fails both ways is skipped and listed as "Skipped" in the tab.
+- **Caching:** results are cached for 3 hours in Supabase Storage at
+  `assets/cache/important-articles.json`, in the same `assets` bucket the quote
+  function uses. The browser also caches for 1 hour in localStorage under
+  `daystart-important-articles-v1`. **↻ Refresh** forces a new run, but no more
+  than once every 10 minutes. If a refresh fails, the last good result is shown.
+- **Cost:** each uncached run is one Claude call with about 150 headlines, which
+  costs roughly a cent or two. With the 3-hour cache, that's at most about 8 calls a day.
+- **Refusals:** the request enables Anthropic's server-side fallback
+  (`fallbacks: "default"`). If Claude Sonnet 5.5 declines the request, another
+  model is used automatically. To turn this off, remove the `betas` and
+  `fallbacks` lines in `supabase/functions/important-articles/index.ts`.
+- **Changing sources or settings:** edit the `SOURCES` list and the constants at
+  the top of `supabase/functions/important-articles/index.ts`, then redeploy.
+
 ---
 
 ## Build for production

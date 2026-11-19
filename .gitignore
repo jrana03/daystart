@@ -7,3 +7,6 @@ dist
 
 .vercel
 .env*
+
+# Placeholder env files are safe to commit
+!.env.example
