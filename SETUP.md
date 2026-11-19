@@ -173,13 +173,16 @@ Until the key is set, the tab shows a "needs an Anthropic API key" message.
   automated requests. When a page is blocked, times out, or yields fewer than 5
   headlines, the function uses that outlet's official RSS feed instead. A source
   that fails both ways is skipped and listed as "Skipped" in the tab.
-- **Caching:** results are cached for 3 hours in Supabase Storage at
+- **Caching (once per day):** Claude runs at most once per local day, the first
+  time the tab loads that day. The result is stored in Supabase Storage at
   `assets/cache/important-articles.json`, in the same `assets` bucket the quote
-  function uses. The browser also caches for 1 hour in localStorage under
-  `daystart-important-articles-v1`. **↻ Refresh** forces a new run, but no more
-  than once every 10 minutes. If a refresh fails, the last good result is shown.
+  function uses, and in the browser's localStorage under
+  `daystart-important-articles-v2`. Both are stamped with the date. Later loads
+  that day reuse it. Click **↻ Refresh** to run it again; to protect against
+  repeated clicks, a refresh within 10 minutes of the last run returns the
+  cached result. If a run fails, the last good result is shown.
 - **Cost:** each uncached run is one Claude call with about 150 headlines, which
-  costs roughly a cent or two. With the 3-hour cache, that's at most about 8 calls a day.
+  costs roughly a cent or two. That's usually one call a day, plus any refreshes.
 - **Refusals:** the request enables Anthropic's server-side fallback
   (`fallbacks: "default"`). If Claude Sonnet 5.5 declines the request, another
   model is used automatically. To turn this off, remove the `betas` and

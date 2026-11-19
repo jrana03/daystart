@@ -4,16 +4,21 @@ import { callFunction, supabaseConfigured } from '../lib/supabase'
 // The /important-articles Edge Function scrapes WaPo, NYT and WSJ, then asks
 // Claude to group headlines covering the same story. The function caches
 // results for a few hours; this browser cache avoids even the round trip
-// on quick reloads.
-const STORAGE_KEY = 'daystart-important-articles-v1'
-const CLIENT_TTL_MS = 60 * 60 * 1000 // 1 hour
+// on reloads. Both run Claude at most once per local day; ↻ Refresh forces a new run.
+const STORAGE_KEY = 'daystart-important-articles-v2'
+
+// Local calendar day, e.g. "2026-11-19".
+const today = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 function readLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    if (Date.now() - parsed.savedAt > CLIENT_TTL_MS) return null
+    if (parsed.day !== today()) return null
     return parsed.data
   } catch {
     return null
@@ -22,7 +27,7 @@ function readLocal() {
 
 function writeLocal(data) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: Date.now(), data }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ day: today(), data }))
   } catch { /* storage full or disabled — non-fatal */ }
 }
 
@@ -87,7 +92,7 @@ export default function ImportantArticles() {
       return
     }
     try {
-      const result = await callFunction('important-articles', { force })
+      const result = await callFunction('important-articles', { force, day: today() })
       setData(result)
       if (!result.setupRequired) writeLocal(result)
     } catch (err) {

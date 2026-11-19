@@ -36,7 +36,9 @@ const json = (data: unknown, status = 200) =>
 
 // ── Configuration ────────────────────────────────────────────────
 const MODEL = 'claude-sonnet-5-5'
-const CACHE_TTL_MS = 3 * 60 * 60 * 1000      // reuse a result for 3 hours
+// One Claude run per day: a cached result is reused for the rest of the
+// caller's local day (sent by the browser as YYYY-MM-DD). Only ↻ Refresh
+// (force: true) re-runs it the same day.
 const FORCE_MIN_AGE_MS = 10 * 60 * 1000      // "Refresh" can't re-run more often than every 10 min
 const CACHE_BUCKET = 'assets'                // same bucket the /quote function uses
 const CACHE_PATH = 'cache/important-articles.json'
@@ -113,6 +115,7 @@ interface Result {
   topics: Topic[]
   sources: SourceStatus[]
   generatedAt: string
+  day?: string
   model: string
   cached?: boolean
   setupRequired?: boolean
@@ -383,9 +386,12 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders })
 
   let force = false
+  let day = new Date().toISOString().slice(0, 10) // UTC fallback
   if (req.method === 'POST') {
     try {
-      force = Boolean((await req.json())?.force)
+      const body = await req.json()
+      force = Boolean(body?.force)
+      if (typeof body?.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.day)) day = body.day
     } catch { /* empty body is fine */ }
   }
 
@@ -403,8 +409,8 @@ Deno.serve(async (req: Request) => {
 
   const cached = await readCache()
   if (cached) {
-    const age = ageMs(cached)
-    if (age < CACHE_TTL_MS && (!force || age < FORCE_MIN_AGE_MS)) {
+    // Same day → reuse. Refresh forces a new run, but not more than once per 10 min.
+    if (cached.day === day && (!force || ageMs(cached) < FORCE_MIN_AGE_MS)) {
       return json({ ...cached, cached: true })
     }
   }
@@ -422,7 +428,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const topics = await groupTopics(apiKey, headlines)
-    const result: Result = { topics, sources, generatedAt: new Date().toISOString(), model: MODEL }
+    const result: Result = { topics, sources, generatedAt: new Date().toISOString(), day, model: MODEL }
     await writeCache(result)
     return json(result)
   } catch (err) {
